@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=driverctl GUI
+Comment=View PCI devices and manage driver overrides
+Exec=driverctl-gui
+Icon=preferences-system
+Terminal=false
+Categories=System;Settings;
+Keywords=driver;pci;override;driverctl;

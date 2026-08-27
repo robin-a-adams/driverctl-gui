@@ -1,0 +1,93 @@
+driverctl-gui (0.5.3-1) unstable; urgency=medium
+
+  * Add a GitHub Actions workflow that builds the package in a clean
+    runner, runs lintian, and publishes a release on tag push.
+  * Add a .gitignore for build artifacts.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 20:00:00 +0000
+
+driverctl-gui (0.5.2-1) unstable; urgency=medium
+
+  * List only drivers bound to the selected bus (from /sys/bus/*/drivers)
+    by default, so suggestions are actually bindable; the "Show all
+    drivers" toggle still offers every installed module.
+  * Warn that vfio-pci binds immediately when it is chosen with
+    "Apply now" unchecked.
+  * Report the actual result of a set (applied, saved, or both) instead
+    of assuming it was deferred.
+  * Log every command and its output to the command panel.
+  * Show a visible message, not just styling, when neither "Apply now"
+    nor "Persistent" is selected.
+  * Top-align the flag checkboxes and buttons with the driver entry.
+  * Show "(none)" for devices with no bound driver.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 19:00:00 +0000
+
+driverctl-gui (0.5.1-1) unstable; urgency=medium
+
+  * Check "Apply now" and "Persistent" by default; mark them and disable
+    Set/Unset when neither is selected.
+  * Move the driver-list toggle below the driver entry and label it
+    "Show all drivers".
+  * Enable "Load Override" only for a device whose override is persisted
+    but not currently active.
+  * Show an explanatory message instead of a blank list when a bus has no
+    overridable devices.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 18:00:00 +0000
+
+driverctl-gui (0.5.0-1) unstable; urgency=medium
+
+  * Add a bus selector (pci, usb) so devices on other buses can be
+    managed; USB device descriptions come from lsusb.
+  * Add "Apply now" and "Persistent" toggles mapping to driverctl's
+    --noprobe and --nosave, so an override can be persisted for the next
+    boot without an immediate rebind.
+  * Add a Load Override action (driverctl load-override).
+  * Show active and persisted override state in the Override column.
+  * Add a command-output panel, toggled from the toolbar.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 17:00:00 +0000
+
+driverctl-gui (0.4.0-1) unstable; urgency=medium
+
+  * Replace the driver combo box with a plain entry whose completion list
+    opens on click and filters as you type (substring match).
+  * Add an "All drivers" toggle to list every installed module for the
+    running kernel instead of only the loaded ones.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 16:00:00 +0000
+
+driverctl-gui (0.3.1-1) unstable; urgency=medium
+
+  * Default to an 800px-wide window and let columns shrink to fit small
+    screens; the description column expands and ellipsizes, and remains
+    reachable by widening the window or the column.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 15:00:00 +0000
+
+driverctl-gui (0.3.0-1) unstable; urgency=medium
+
+  * Autocomplete driver names from the loaded-module list while typing.
+  * Widen the window and set minimum column widths so all columns are
+    visible without scrolling.
+  * Disable "Unset Override" unless the selected device has an override.
+  * Confirm before rebinding a device that currently has a driver bound.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 14:00:00 +0000
+
+driverctl-gui (0.2.0-1) unstable; urgency=medium
+
+  * Add a device description column (from lspci).
+  * Add a live search box that filters the device list.
+  * Replace the driver text field with an editable dropdown of loaded
+    modules and vfio-pci; other drivers can still be typed.
+  * Move refresh to the toolbar and have it re-read devices and drivers.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 13:00:00 +0000
+
+driverctl-gui (0.1.0-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #NNNNNN)
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 12:00:00 +0000

@@ -1,0 +1,14 @@
+Remaining items before uploading to Debian
+===========================================
+
+* ITP bug number
+  - debian/changelog: replace "#NNNNNN" in the Closes: entry with the
+    bug number after filing the ITP against the wnpp pseudo-package.
+    This clears the two remaining lintian warnings.
+
+* Standards-Version
+  - debian/control: set to the current Debian Policy version at upload
+    time (currently 4.7.0).
+
+The maintainer email used in debian/control and debian/changelog must
+match the GPG key used to sign the upload.

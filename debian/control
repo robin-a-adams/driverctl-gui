@@ -1,0 +1,29 @@
+Source: driverctl-gui
+Section: admin
+Priority: optional
+Maintainer: Robin A. Adams <robin.a.adams.software@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/robin-a-adams/driverctl-gui
+Vcs-Browser: https://github.com/robin-a-adams/driverctl-gui
+Vcs-Git: https://github.com/robin-a-adams/driverctl-gui.git
+Rules-Requires-Root: no
+
+Package: driverctl-gui
+Architecture: all
+Depends: ${misc:Depends},
+         python3,
+         python3-gi,
+         gir1.2-gtk-3.0,
+         driverctl,
+         pciutils,
+         usbutils,
+         pkexec
+Description: graphical front-end for driverctl
+ driverctl-gui is a small GTK application to view PCI devices and set or
+ clear device driver overrides using driverctl. It lets you choose which
+ driver binds to a device, persistently across reboots, without editing
+ configuration files by hand.
+ .
+ Privileged actions are performed through pkexec, so the application itself
+ does not run with elevated privileges.

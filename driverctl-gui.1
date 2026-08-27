@@ -1,0 +1,21 @@
+.TH DRIVERCTL-GUI 1 "2026-08-27" "driverctl-gui 0.5.3" "User Commands"
+.SH NAME
+driverctl-gui \- graphical front-end for driverctl
+.SH SYNOPSIS
+.B driverctl-gui
+.SH DESCRIPTION
+.B driverctl-gui
+is a GTK application to view PCI devices and their current driver, and to
+set or clear device driver overrides using
+.BR driverctl (8).
+An override selects which driver binds to a device and persists across
+reboots.
+.PP
+Privileged actions are performed through
+.BR pkexec (1),
+so the application itself does not run with elevated privileges.
+.SH SEE ALSO
+.BR driverctl (8),
+.BR pkexec (1)
+.SH AUTHOR
+Robin A. Adams
