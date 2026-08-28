@@ -6,10 +6,19 @@ import subprocess
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk, Gtk
 
 DRIVERCTL = shutil.which("driverctl") or "/usr/sbin/driverctl"
 BUSES = ("pci", "usb")
+NO_DRIVER = ("", "(none)")
+
+CONSOLE_CSS = b"""
+.console-view, .console-view text {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.16);
+}
+"""
 
 
 def run(args):
@@ -71,9 +80,8 @@ def list_devices(bus):
 
 def bindable_drivers(bus):
     drivers = {"vfio-pci"}
-    root = "/sys/bus/%s/drivers" % bus
     try:
-        drivers.update(os.listdir(root))
+        drivers.update(os.listdir("/sys/bus/%s/drivers" % bus))
     except OSError:
         pass
     return sorted(drivers)
@@ -94,6 +102,7 @@ class DriverctlWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="driverctl GUI")
         self.set_default_size(860, 600)
+        self.install_css()
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         for setter in (box.set_margin_top, box.set_margin_bottom,
@@ -156,12 +165,7 @@ class DriverctlWindow(Gtk.Window):
         self.empty_label.get_style_context().add_class("dim-label")
         self.stack.add_named(self.empty_label, "empty")
 
-        self.output_view = Gtk.TextView(editable=False, monospace=True)
-        self.output_scrolled = Gtk.ScrolledWindow()
-        self.output_scrolled.set_min_content_height(120)
-        self.output_scrolled.add(self.output_view)
-        self.output_scrolled.set_no_show_all(True)
-        box.pack_start(self.output_scrolled, False, False, 0)
+        box.pack_start(self.build_console(), False, False, 0)
 
         self.warning_label = Gtk.Label()
         self.warning_label.set_halign(Gtk.Align.START)
@@ -169,12 +173,51 @@ class DriverctlWindow(Gtk.Window):
         self.warning_label.set_no_show_all(True)
         box.pack_start(self.warning_label, False, False, 0)
 
-        driver_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        box.pack_start(driver_row, False, False, 0)
+        box.pack_start(self.build_controls(), False, False, 0)
+
+        self.update_flag_state()
+        self.refresh()
+
+    def install_css(self):
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CONSOLE_CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+    def build_console(self):
+        self.output_revealer = Gtk.Revealer()
+        frame = Gtk.Frame(label="Command output")
+        console = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        console.set_margin_top(4)
+        console.set_margin_bottom(4)
+        console.set_margin_start(4)
+        console.set_margin_end(4)
+
+        header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        clear = Gtk.Button(label="Clear")
+        clear.connect("clicked",
+                      lambda _b: self.output_view.get_buffer().set_text(""))
+        header.pack_end(clear, False, False, 0)
+        console.pack_start(header, False, False, 0)
+
+        self.output_view = Gtk.TextView(editable=False, cursor_visible=False)
+        self.output_view.get_style_context().add_class("console-view")
+        output_scrolled = Gtk.ScrolledWindow()
+        output_scrolled.set_min_content_height(150)
+        output_scrolled.add(self.output_view)
+        console.pack_start(output_scrolled, True, True, 0)
+
+        frame.add(console)
+        self.output_revealer.add(frame)
+        return self.output_revealer
+
+    def build_controls(self):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
         driver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         driver_box.set_hexpand(True)
-        driver_row.pack_start(driver_box, True, True, 0)
+        row.pack_start(driver_box, True, True, 0)
 
         self.driver_entry = Gtk.Entry()
         self.driver_entry.set_placeholder_text("driver name")
@@ -202,34 +245,32 @@ class DriverctlWindow(Gtk.Window):
         self.apply_now_check.set_tooltip_text(
             "Rebind immediately; may disrupt a device in use")
         self.apply_now_check.connect("toggled", lambda _b: self.update_flag_state())
-        driver_row.pack_start(self.apply_now_check, False, False, 0)
+        row.pack_start(self.apply_now_check, False, False, 0)
 
         self.persist_check = Gtk.CheckButton(label="Persistent")
         self.persist_check.set_active(True)
         self.persist_check.set_valign(Gtk.Align.START)
         self.persist_check.set_tooltip_text("Keep the change across reboots")
         self.persist_check.connect("toggled", lambda _b: self.update_flag_state())
-        driver_row.pack_start(self.persist_check, False, False, 0)
+        row.pack_start(self.persist_check, False, False, 0)
 
         self.set_button = Gtk.Button(label="Set Override")
         self.set_button.set_valign(Gtk.Align.START)
         self.set_button.connect("clicked", self.on_set)
-        driver_row.pack_start(self.set_button, False, False, 0)
+        row.pack_start(self.set_button, False, False, 0)
 
         self.unset_button = Gtk.Button(label="Unset Override")
         self.unset_button.set_valign(Gtk.Align.START)
         self.unset_button.connect("clicked", self.on_unset)
-        driver_row.pack_start(self.unset_button, False, False, 0)
+        row.pack_start(self.unset_button, False, False, 0)
 
         self.load_button = Gtk.Button(label="Load Override")
         self.load_button.set_valign(Gtk.Align.START)
         self.load_button.set_tooltip_text(
             "Apply an override that is saved but not currently active")
         self.load_button.connect("clicked", self.on_load)
-        driver_row.pack_start(self.load_button, False, False, 0)
-
-        self.update_flag_state()
-        self.refresh()
+        row.pack_start(self.load_button, False, False, 0)
+        return row
 
     @property
     def bus(self):
@@ -245,7 +286,7 @@ class DriverctlWindow(Gtk.Window):
         return key in self.completion_model[treeiter][0]
 
     def on_output_toggled(self, button):
-        self.output_scrolled.set_visible(button.get_active())
+        self.output_revealer.set_reveal_child(button.get_active())
 
     def update_flag_state(self):
         valid = self.apply_now_check.get_active() or self.persist_check.get_active()
@@ -284,6 +325,9 @@ class DriverctlWindow(Gtk.Window):
         model, treeiter = self.view.get_selection().get_selected()
         return None if treeiter is None else list(model[treeiter])
 
+    def has_driver(self, row):
+        return bool(row) and row[2] not in NO_DRIVER
+
     def flags(self):
         args = []
         if not self.apply_now_check.get_active():
@@ -306,8 +350,12 @@ class DriverctlWindow(Gtk.Window):
                     "driver. If %s is in use this may disrupt the running "
                     "system. Continue?" % row[0]):
                 return
-        elif row[2] and self.apply_now_check.get_active() and not self.confirm_rebind(row):
-            return
+        elif self.has_driver(row) and self.apply_now_check.get_active():
+            if not self.confirm(
+                    "Rebind %s now?" % row[0],
+                    "It is currently bound to %s. Rebinding a device that is "
+                    "in use may affect the running system." % row[2]):
+                return
         self.privileged(self.flags() + ["set-override", row[0], driver])
 
     def on_unset(self, _button):
@@ -315,8 +363,12 @@ class DriverctlWindow(Gtk.Window):
         if not row:
             self.warn("Select a device.")
             return
-        if row[2] and self.apply_now_check.get_active() and not self.confirm_rebind(row):
-            return
+        if self.has_driver(row):
+            if not self.confirm(
+                    "Unbind %s?" % row[0],
+                    "Removing the override unbinds it from %s. If the device "
+                    "is in use this may affect the running system." % row[2]):
+                return
         self.privileged(self.flags() + ["unset-override", row[0]])
 
     def on_load(self, _button):
@@ -325,12 +377,6 @@ class DriverctlWindow(Gtk.Window):
             self.warn("Select a device.")
             return
         self.privileged(["load-override", row[0]])
-
-    def confirm_rebind(self, row):
-        return self.confirm(
-            "Rebind %s now?" % row[0],
-            "It is currently bound to %s. Rebinding a device that is in use "
-            "may affect the running system." % row[2])
 
     def confirm(self, text, secondary):
         dialog = Gtk.MessageDialog(
@@ -374,9 +420,9 @@ class DriverctlWindow(Gtk.Window):
         if result.stderr:
             buffer.insert(buffer.get_end_iter(), result.stderr)
         if result.returncode not in (0, 126):
-            buffer.insert(buffer.get_end_iter(),
-                          "[exit %d]\n" % result.returncode)
+            buffer.insert(buffer.get_end_iter(), "[exit %d]\n" % result.returncode)
         buffer.insert(buffer.get_end_iter(), "\n")
+        self.output_view.scroll_to_iter(buffer.get_end_iter(), 0.0, False, 0, 0)
 
     def info(self, message):
         self._dialog(Gtk.MessageType.INFO, message)

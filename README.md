@@ -1,26 +1,34 @@
 # driverctl-gui
 
 A small GTK front-end for [`driverctl`](https://gitlab.com/driverctl/driverctl).
-It lists PCI devices with their current driver, shows which have an override
-set, and lets you set or clear a driver override. Privileged actions run
-through `pkexec`, so the application itself does not run as root.
+It lists PCI and USB devices with their current driver, shows which have an
+override set, and lets you set, clear, or load a driver override. Privileged
+actions run through `pkexec`, so the application itself does not run as root.
 
 It lets you choose which driver binds to a device, persistently across
-reboots, without editing configuration files by hand.
+reboots, without editing configuration files by hand. A common use is binding
+a device to `vfio-pci` for virtual-machine passthrough.
 
 ## Usage
 
 Launch **driverctl GUI** from the applications menu, or run `driverctl-gui`.
 
-- Select a device in the list.
-- To bind it to a driver, type the driver name and click **Set Override**.
-  You will be prompted for authentication.
-- To restore the default driver, select the device and click **Unset
-  Override**.
-- **Refresh** re-reads the device list.
+- **Bus** selects the device bus to manage (`pci` or `usb`).
+- **Search** filters the device list across all columns.
+- Select a device, choose a driver, and click **Set Override**. The driver
+  field completes from the drivers available on the selected bus; click it to
+  see the list, or tick **Show all drivers** to include every installed
+  module.
+- **Unset Override** removes an override; **Load Override** applies one that is
+  saved but not yet active.
+- **Apply now** rebinds immediately; leave it unchecked to save the override
+  for the next boot instead. **Persistent** keeps the override across reboots.
+- The **Override** column shows whether an override is `active`, `persisted`,
+  or both.
+- The toolbar terminal button reveals a panel with the exact commands run and
+  their output.
 
-An override set here is persistent across reboots (this is `driverctl`'s
-own behaviour).
+Overrides are `driverctl`'s own persistent mechanism, so they survive reboots.
 
 ## Dependencies
 
@@ -32,6 +40,17 @@ Installed automatically by `apt`:
 - `usbutils` — provides `lsusb` for USB device descriptions.
 - `pkexec` — for privileged actions.
 
+## Install
+
+Download the `.deb` from the [latest release][releases] and install it with
+`apt` so its dependencies are resolved:
+
+```sh
+sudo apt install ./driverctl-gui_*.deb
+```
+
+[releases]: https://github.com/robin-a-adams/driverctl-gui/releases/latest
+
 ## Build
 
 Install the build dependencies, then build:
@@ -42,14 +61,6 @@ dpkg-buildpackage -us -uc -b
 ```
 
 This produces `../driverctl-gui_<version>_all.deb`.
-
-## Install
-
-Install the built package with `apt` so its dependencies are resolved:
-
-```sh
-sudo apt install ./driverctl-gui_0.1.0-1_all.deb
-```
 
 ## License
 

@@ -1,3 +1,22 @@
+driverctl-gui (0.5.5-1) unstable; urgency=medium
+
+  * Warn before unbinding a device that has a driver bound when unsetting
+    an override, regardless of the "Apply now" state.
+  * Treat "(none)" as no bound driver so warnings only fire when relevant.
+  * Show the command-output panel with a Gtk.Revealer so logged output
+    actually appears when toggled.
+  * Give the output panel a framed, monospaced, shaded appearance with a
+    Clear button so it reads as a console.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 22:00:00 +0000
+
+driverctl-gui (0.5.4-1) unstable; urgency=medium
+
+  * Update the README to describe the current features and use a
+    version-agnostic install instruction.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 21:00:00 +0000
+
 driverctl-gui (0.5.3-1) unstable; urgency=medium
 
   * Add a GitHub Actions workflow that builds the package in a clean
