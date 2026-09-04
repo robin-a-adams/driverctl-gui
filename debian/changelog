@@ -1,3 +1,9 @@
+driverctl-gui (0.5.6-1) unstable; urgency=medium
+
+  * Reference the filed ITP bug number in the initial changelog entry.
+
+ -- Robin A. Adams <robin.a.adams.software@gmail.com>  Fri, 04 Sep 2026 12:00:00 +0000
+
 driverctl-gui (0.5.5-1) unstable; urgency=medium
 
   * Warn before unbinding a device that has a driver bound when unsetting
@@ -107,6 +113,6 @@ driverctl-gui (0.2.0-1) unstable; urgency=medium
 
 driverctl-gui (0.1.0-1) unstable; urgency=medium
 
-  * Initial release. (Closes: #NNNNNN)
+  * Initial release. (Closes: #1145936)
 
  -- Robin A. Adams <robin.a.adams.software@gmail.com>  Thu, 27 Aug 2026 12:00:00 +0000
